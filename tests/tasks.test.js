@@ -17,9 +17,9 @@ let adminId, managerId, memberId;
 let taskId;
 let orgId;
 
-const registerAndLogin = async (name, email, role, orgName) => {
+const registerUser = async (name, email, orgName) => {
   const reg = await request(app).post('/api/v1/auth/register').send({
-    name, email, password: 'password123', organizationName: orgName, role,
+    name, email, password: 'password123', organizationName: orgName,
   });
   return { token: reg.body.data.accessToken, userId: reg.body.data.user._id };
 };
@@ -30,8 +30,8 @@ beforeAll(async () => {
   await Organization.deleteMany({});
   await Task.deleteMany({});
 
-  // Admin registers (and creates org)
-  const adminRes = await registerAndLogin('Admin User', 'admin2@test.com', 'ADMIN', 'Task Test Org');
+  // Admin registers (and creates org) — first user always becomes ADMIN
+  const adminRes = await registerUser('Admin User', 'admin2@test.com', 'Task Test Org');
   adminToken = adminRes.token;
   adminId = adminRes.userId;
 
@@ -39,12 +39,16 @@ beforeAll(async () => {
   const org = await Organization.findOne({ name: 'Task Test Org' });
   orgId = org._id;
 
-  // Manager and Member join same org
-  const managerRes = await registerAndLogin('Manager User', 'manager@test.com', 'MANAGER', 'Task Test Org');
+  // Register manager as MEMBER, then admin promotes them
+  const managerRes = await registerUser('Manager User', 'manager@test.com', 'Task Test Org');
   managerToken = managerRes.token;
   managerId = managerRes.userId;
+  await request(app)
+    .patch(`/api/v1/users/${managerId}`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ role: 'MANAGER' });
 
-  const memberRes = await registerAndLogin('Member User', 'member@test.com', 'MEMBER', 'Task Test Org');
+  const memberRes = await registerUser('Member User', 'member@test.com', 'Task Test Org');
   memberToken = memberRes.token;
   memberId = memberRes.userId;
 });
@@ -161,7 +165,7 @@ describe('Task RBAC', () => {
 
     it('non-assignee MEMBER cannot change task status', async () => {
       // Create another member
-      const otherMember = await registerAndLogin('Other Member', 'other@test.com', 'MEMBER', 'Task Test Org');
+      const otherMember = await registerUser('Other Member', 'other@test.com', 'Task Test Org');
       const res = await request(app)
         .patch(`/api/v1/tasks/${taskId}/status`)
         .set('Authorization', `Bearer ${otherMember.token}`)

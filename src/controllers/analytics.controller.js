@@ -42,7 +42,7 @@ const taskAnalytics = async (req, res, next) => {
           },
         },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
-        { $unwind: { path: '$user', preserveNullAndEmpty: true } },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
         {
           $project: {
             _id: 0,

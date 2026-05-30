@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 
 const generateAccessToken = (payload) =>
-  jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
+  jwt.sign({ ...payload, jti: uuidv4() }, process.env.JWT_ACCESS_SECRET, {
     expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
   });
 
 const generateRefreshToken = (payload) =>
-  jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+  jwt.sign({ ...payload, jti: uuidv4() }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   });
 

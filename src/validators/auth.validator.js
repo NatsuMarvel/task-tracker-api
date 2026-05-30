@@ -5,7 +5,6 @@ const registerValidator = [
   body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('organizationName').trim().notEmpty().withMessage('Organization name is required'),
-  body('role').optional().isIn(['ADMIN', 'MANAGER', 'MEMBER']).withMessage('Role must be ADMIN, MANAGER, or MEMBER'),
 ];
 
 const loginValidator = [

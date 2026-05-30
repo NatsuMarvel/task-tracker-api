@@ -17,9 +17,9 @@ const register = async (req, res, next) => {
       return sendError(res, 409, 'DUPLICATE_ERROR', 'Email already registered in this organization');
     }
 
-    // first user in a new org becomes admin automatically
+    // first user in a new org becomes admin; all others are always MEMBER on self-registration
     const orgUserCount = await User.countDocuments({ organization: org._id });
-    const assignedRole = orgUserCount === 0 ? ROLES.ADMIN : (role || ROLES.MEMBER);
+    const assignedRole = orgUserCount === 0 ? ROLES.ADMIN : ROLES.MEMBER;
 
     const user = await User.create({ name, email, password, role: assignedRole, organization: org._id });
 
