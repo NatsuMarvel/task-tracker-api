@@ -218,3 +218,4 @@ Tests cover:
 6. **React frontend** — task board with drag-and-drop status columns
 7. **CI/CD pipeline** — GitHub Actions for lint, test, build, push to container registry
 8. **API versioning strategy** — currently hardcoded as `/api/v1`; would add a proper versioning middleware
+9. **Per-org email uniqueness** — currently an email address is globally unique across all organizations (one identity per platform). To support the same person belonging to multiple organizations, the `User.email` unique constraint would need to be scoped to the compound `{ organization, email }` index instead.
